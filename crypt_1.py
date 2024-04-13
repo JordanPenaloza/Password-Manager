@@ -8,7 +8,7 @@ conn = sqlite3.connect('credentials.db')
 cursor = conn.cursor()
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS credentials (
-               id INTEGER PRIMARY KEY AUTO INCREMENT,
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
                website TEXT NOT NULL,
                username TEXT UNIQUE NOT NULL,
                password TEXT NOT NULL
@@ -29,21 +29,30 @@ def storePassword(website, username, password):
                    (website, username, encrypted_password))
     conn.commit()
 
-def getPasswords(website, username):
+def getPassword(website, username):
     cursor.execute("SELECT password FROM credentials WHERE website=? AND username=?",
               (website, username))
     result = cursor.fetchone()
     if result:
         encrypted_password = result[0]
         decrypted_password = decrypt(encrypted_password)
-        return decrypted_password.decode()
+        return decrypted_password
     else:
         return None
+def getAllCredentials():
+    cursor.execute("SELECT * FROM credentials")
+    results = cursor.fetchall()
+    print("ID | Website | Username | Password")
+    print("-" * 40)
+    for row in results:
+        credentials_id, website, username, encrypted_password = row
+        print(f"{credentials_id:<3}| {website:<10}| {username:<10}| {encrypted_password}")
+                   
     
 def main():
     storePassword("meow.com", "jordan", "meow")
     retrieved_password = getPassword("meow.com", "jordan")
     print(retrieved_password)
-
+    
 if __name__ == "__main__":
     main()
